@@ -1,0 +1,10 @@
+List of Code of Improvememts:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1.) ~~Taking variable calculation outside of forloop ~~ 
+On lines 105 and 106 of the original FilterMain.cpp (the two inner for loops that loop through the filter) 
+there were the lines filter -> getSize() that got executed every single iteration of the loop. Instead of having
+this value have to be recalculated every iteration, I moved its calculation outside of the for loop (its value
+stays the same) to save a little bit of time. 
+
+This was also done with input_width and the input_height variables
