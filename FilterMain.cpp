@@ -93,7 +93,7 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   long long cycStart, cycStop;
 
   cycStart = rdtscll();
-
+  int filterSize = filter -> getSize();
   output -> width = input -> width;
   output -> height = input -> height;
 
@@ -102,8 +102,8 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
       for(int plane = 0; plane < 3; plane++) {
 
 	int value = 0;
-	for (int j = 0; j < filter -> getSize(); j++) {
-	  for (int i = 0; i < filter -> getSize(); i++) {
+	for (int j = 0; j < filterSize; j++) {
+	  for (int i = 0; i < filterSize; i++) {
 	    value = value +  input -> color[plane][row + i - 1][col + j - 1]
 	      * filter -> get(i, j);
 	  }
