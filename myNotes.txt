@@ -8,3 +8,12 @@ this value have to be recalculated every iteration, I moved its calculation outs
 stays the same) to save a little bit of time. 
 
 This was also done with input_width and the input_height variables
+
+2.) ~~Reordered referencing of col, row, plane to match the way that matrices are stored in memory ~~
+	We know that in C, matrices are stored in Row-Major order, meaning that all elements across a row 
+are accessed before moving to the next row. Originally, the code in FilterMain was arranged such that the 
+outer loop was going through the columns and the inner loop was going through the rows. This means that in 
+memory the elements are stored the opposite of how they are accessed by the loop. Reversing this significantly 
+improved performance. I also placed the plane loop on the very outside because the filter works by accessing each
+row and each column on a single plane before moving on the next plane, therefore it would make sense that the plane
+gets updated only when every row and column of that plane has been accessed
