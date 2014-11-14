@@ -17,3 +17,10 @@ memory the elements are stored the opposite of how they are accessed by the loop
 improved performance. I also placed the plane loop on the very outside because the filter works by accessing each
 row and each column on a single plane before moving on the next plane, therefore it would make sense that the plane
 gets updated only when every row and column of that plane has been accessed
+
+3.) ~~ Loop Unrolling ~~
+	The main part of the loop is responsible for updating the filtered image based off the calculated value for 
+"value". By default, in each iteration only one value for "value" is calculated, and therefore only one pixel of 
+the filtered image is updated. By unrolling the loop by four, or by calculating three values of "value" with each 
+iteration instead of just one, we can update four pixels with each iteration instead of just one. This allows us to
+progress through the image much faster because we need 4 times less iterations than before
