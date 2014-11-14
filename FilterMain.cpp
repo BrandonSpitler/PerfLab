@@ -93,13 +93,19 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   long long cycStart, cycStop;
 
   cycStart = rdtscll();
+ 
   int filterSize = filter -> getSize();
+
+  int input_width = input -> width;
+  int input_height = input -> height;
+
   output -> width = input -> width;
   output -> height = input -> height;
-
-  for(int col = 1; col < (input -> width) - 1; col = col + 1) {
-    for(int row = 1; row < (input -> height) - 1 ; row = row + 1) {
-      for(int plane = 0; plane < 3; plane++) {
+  
+  for(int plane = 0; plane < 3; plane++) {
+    for(int row = 1; row < (input_height) - 1; row = row + 1) {
+      for(int col = 1; col < (input_width) - 1 ; col = col + 1) {
+      
 
 	int value = 0;
 	for (int j = 0; j < filterSize; j++) {
