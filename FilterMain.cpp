@@ -93,31 +93,72 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   long long cycStart, cycStop;
 
   cycStart = rdtscll();
- 
+
+
+  //Calculated value of filterSize outside of for loop
+  //Avoid recalculating value in every iteration
   int filterSize = filter -> getSize();
 
+  //Same idea s above, take calculations of input_width and input_height
+  //outside of loop
   int input_width = input -> width;
   int input_height = input -> height;
 
-  output -> width = input -> width;
-  output -> height = input -> height;
+  //Take calculation of filterDivisor out of loop
+  int filterDivisor = filter -> getDivisor();
+
+  output -> width = input_width;
+  output -> height = input_height;
   
-  for(int plane = 0; plane < 3; plane++) {
-    for(int row = 1; row < (input_height) - 1; row = row + 1) {
-      for(int col = 1; col < (input_width) - 1 ; col = col + 1) {
+  /*
+  Reorder cols and rows in order to match the RowMajor ordering of matrices in C
+  By finishing the elements of a row first before finishing the column, we allow
+  the program to fetch elements continguously from memory.
+ 
+  Unroll the loop 4-fold:
+  Calculate 4 values for "value" with each iteration instead of just one. 
+  Increment for loops by 4 with each iteration, progress through images 4 
+  times faster. However, not necassarily execute overall program 4 times faster
+  becauses of overhead of initializing extra variables and using extra registers
+*/
+ for(int plane = 0; plane < 3; plane++) {
+    for(int row = 1; row < (input_height) - 4; row+=4) {
+      for(int col = 1; col < (input_width) - 4 ; col+=4) {
       
 
-	int value = 0;
-	for (int j = 0; j < filterSize; j++) {
-	  for (int i = 0; i < filterSize; i++) {
-	    value = value +  input -> color[plane][row + i - 1][col + j - 1]
-	      * filter -> get(i, j);
+  int value = 0;
+  int value2 = 0;
+  int value3 = 0;
+  int value4 = 0;
+	for (int j = 0; j < filterSize-3; j+=4) {
+	  for (int i = 0; i < filterSize-3; i+=4) {
+      
+	  value = value +  input -> color[plane][row + i - 1][col + j - 1] * filter -> get(i, j);
+      value2 = value2 + input ->color[plane][row + i][col + j] * filter -> get(i+1,j+1); 
+      value3 = value3 + input ->color[plane][row + i + 1][col + j + 1] * filter -> get(i+2,j+2); 
+      value4 = value4 + input ->color[plane][row + i + 2][col + j + 2] * filter -> get(i+3,j+4); 
 	  }
 	}
-	value = value / filter -> getDivisor();
+	value = value / filterDivisor;
 	if ( value  < 0 ) { value = 0; }
 	if ( value  > 255 ) { value = 255; }
 	output -> color[plane][row][col] = value;
+
+    value2 = value2 / filterDivisor;
+    if ( value2  < 0 ) { value2 = 0; }
+    if ( value2  > 255 ) { value2 = 255; }
+    output -> color[plane][row+1][col+1] = value2;
+
+    value3 = value3 / filterDivisor;
+    if ( value3  < 0 ) { value3 = 0; }
+    if ( value3  > 255 ) { value3 = 255; }
+    output -> color[plane][row+2][col+2] = value3;
+
+    value4 = value4 / filterDivisor;
+    if ( value4  < 0 ) { value4 = 0; }
+    if ( value4  > 255 ) { value4 = 255; }
+    output -> color[plane][row+3][col+3] = value4;
+
       }
     }
   }
